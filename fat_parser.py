@@ -11,11 +11,12 @@ OFFSET_TO_FIELD_MAP = {
     'root_entity_count': (17, 19, '<H'),
     'total_sectors_16': (19, 21, '<H'),
     'media': (21, 22, '<b'),
-    'FAT_size': (22, 24, '<H'),
+    'fat_size_16': (22, 24, '<H'),
     'sectors_per_track': (24, 26, '<H'),
     'number_of_heads': (26, 28, '<H'),
     'number_of_hidden_sectors': (28, 32, '<I'),
-    'total_sectors_32': (32, 36, '<I')
+    'total_sectors_32': (32, 36, '<I'),
+    'fat_size_32': (36, 40, '<I')
 }
 
 
@@ -30,7 +31,9 @@ def get_boot_sector_params(data: bytes) -> dict:
 
 def calculate_parameters(boot_sector_params: dict) -> dict:
     fat_start_sector = boot_sector_params['reserved_sectors_count']
-    fat_sectors = boot_sector_params['FAT_size'] * boot_sector_params['numbers_of_FAT']
+    fat_sectors = boot_sector_params['numbers_of_FAT'] * (boot_sector_params['fat_size_16'] if
+                                                          boot_sector_params['fat_size_16'] else
+                                                          boot_sector_params['fat_size_32'])
     root_directory_start_sector = fat_start_sector + fat_sectors
     root_directory_sectors = math.floor((32 * boot_sector_params['root_entity_count'] +
                                          boot_sector_params['bytes_per_sector'] - 1) / boot_sector_params[
